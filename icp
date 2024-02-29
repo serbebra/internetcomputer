@@ -1,0 +1,52 @@
+// Define a proposal record
+type Proposal = {
+  name : Text;
+  votes : Nat;
+};
+
+// Define a voting system actor
+actor VotingSystem {
+  // List of proposals
+  var proposals : [Proposal] := [];
+  
+  // Function to add a new proposal
+  public func addProposal(name : Text) : async {
+    proposals := proposals # [{name = name, votes = 0}];
+  };
+  
+  // Function to vote for a proposal
+  public func vote(index : Nat) : async {
+    if (index >= Array.length(proposals)) {
+      // Proposal index out of bounds
+      return;
+    }
+    let proposal = proposals[index];
+    proposal.votes += 1;
+    proposals := proposals{index := proposal};
+  };
+  
+  // Function to get the list of proposals
+  public query func getProposals() : async [Proposal] {
+    return proposals;
+  };
+};
+
+// Entrypoint function
+public func main() : async () {
+  // Initialize the voting system actor
+  let votingSystem = actor VotingSystem();
+  
+  // Example usage: Add proposals and vote
+  await votingSystem.addProposal("Proposal 1");
+  await votingSystem.addProposal("Proposal 2");
+  
+  await votingSystem.vote(0);
+  await votingSystem.vote(1);
+  
+  // Retrieve and display the list of proposals
+  let proposalList = await votingSystem.getProposals();
+  Debug.print("List of Proposals:");
+  Array.iter((p : Proposal) => {
+    Debug.print("Proposal: " # p.name # ", Votes: " # Nat.toText(p.votes));
+  }, proposalList);
+};
